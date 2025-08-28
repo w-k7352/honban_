@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const base64Image = await fileToBase64(imageFile);
 
     // Gemini Vision Pro モデルを初期化
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // プロンプト詳細設計から固定プロンプトと短文案生成プロンプトを結合
     const fixedPrompt = `あなたはマーケティングと広報の専門家です。ユーザーが入力した「商品名・商品画像URL・価格・買える場所」の情報をもとに、以下を考慮して商品を説明してください。
@@ -73,7 +73,11 @@ export async function POST(req: NextRequest) {
     // Gemini APIからの応答がJSON形式であることを期待し、パースする
     let shortTexts: string[];
     try {
-      shortTexts = JSON.parse(text);
+      let jsonString = text.trim();
+      if (jsonString.startsWith('```json') && jsonString.endsWith('```')) {
+        jsonString = jsonString.substring('```json\n'.length, jsonString.length - '```'.length).trim();
+      }
+      shortTexts = JSON.parse(jsonString);
       if (!Array.isArray(shortTexts) || shortTexts.length !== 3) {
         throw new Error('Invalid format from Gemini API. Expected a JSON array of 3 strings.');
       }

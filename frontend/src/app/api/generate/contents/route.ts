@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Buffer } from 'buffer';
 
 // 環境変数からAPIキーを取得
 const API_KEY = process.env.GEMINI_API_KEY;
@@ -25,18 +26,9 @@ export async function POST(req: NextRequest) {
 
     // 画像ファイルをBase64エンコードするヘルパー関数
     async function fileToBase64(file: File): Promise<string> {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          if (typeof reader.result === 'string') {
-            resolve(reader.result.split(',')[1]);
-          } else {
-            reject(new Error('Failed to read file as string.'));
-          }
-        };
-        reader.onerror = (error) => reject(error);
-        reader.readAsDataURL(file);
-      });
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      return buffer.toString('base64');
     }
 
     const base64Image = await fileToBase64(imageFile);
@@ -81,7 +73,7 @@ ${selectedShortText}
 }`; 
 
     // テキスト生成モデル
-    const textModel = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const textModel = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
     const textResult = await textModel.generateContent(detailedContentPrompt);
     const textResponse = await textResult.response;
     const generatedText = textResponse.text();

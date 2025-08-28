@@ -165,6 +165,7 @@ export default function Home() {
         <h2 className="text-xl font-semibold mb-4 text-center">
           ステップ1: 商品情報を入力してください
         </h2>
+        {error && <p className="text-red-500 text-center mb-4">エラー: {error}</p>}
         {renderMainContent()}
       </div>
     </main>
